@@ -1,0 +1,127 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at top, #ffe6f2, #f5f5f5);
+  color: #333;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.game-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  padding: 20px;
+  max-width: 800px;
+  width: 100%;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.hud {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-weight: 600;
+}
+
+main {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.stack-area {
+  flex: 1;
+}
+
+.stack {
+  list-style: none;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column-reverse; /* jos în listă = jos în stivă */
+  align-items: center;
+  gap: 6px;
+}
+
+.stack-item {
+  width: 80%;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+  position: relative;
+}
+
+.stack-item.top {
+  outline: 3px solid #222;
+}
+
+.stack-item[data-type="A"] { background: #e63946; }
+.stack-item[data-type="B"] { background: #f4a261; }
+.stack-item[data-type="C"] { background: #2a9d8f; }
+.stack-item[data-type="D"] { background: #457b9d; }
+
+.controls {
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background: #e63946;
+  color: #fff;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button:hover {
+  background: #d62839;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.log {
+  margin-top: 20px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.log-entry {
+  margin-bottom: 4px;
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #777;
+}
