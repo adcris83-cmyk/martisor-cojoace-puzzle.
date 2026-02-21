@@ -1,144 +1,126 @@
-// Definim nivelurile jocului
-const LEVELS = [
-  {
-    id: 1,
-    name: "Început de primăvară",
-    initialStack: ["A", "B", "C"],
-    targetCojoace: 2,
-    maxMoves: 10
-  },
-  {
-    id: 2,
-    name: "Vânt de martie",
-    initialStack: ["B", "C", "A", "D"],
-    targetCojoace: 3,
-    maxMoves: 14
-  },
-  {
-    id: 3,
-    name: "Ninsoare târzie",
-    initialStack: ["C", "B", "A", "D", "B"],
-    targetCojoace: 4,
-    maxMoves: 18
-  },
-  {
-    id: 4,
-    name: "Sărbătoare în sat",
-    initialStack: ["D", "C", "B", "A", "B", "A"],
-    targetCojoace: 6,
-    maxMoves: 24
-  }
-  // poți adăuga mai multe niveluri
+// Nivelurile jocului
+const MARTISOR_LEVELS = [
+  { id: 1, name: "Început de primăvară", initialStack: ["A","B","C"], targetCojoace: 2, maxMoves: 10 },
+  { id: 2, name: "Vânt de martie", initialStack: ["B","C","A","D"], targetCojoace: 3, maxMoves: 14 },
+  { id: 3, name: "Ninsoare târzie", initialStack: ["C","B","A","D","B"], targetCojoace: 4, maxMoves: 18 },
+  { id: 4, name: "Sărbătoare în sat", initialStack: ["D","C","B","A","B","A"], targetCojoace: 6, maxMoves: 24 }
 ];
 
-let currentLevelIndex = 0;
-let stack = [];
-let cojoace = 0;
-let moves = 0;
+let martisorLevel = 0;
+let martisorStack = [];
+let martisorCojoace = 0;
+let martisorMoves = 0;
 
-const stackEl = document.getElementById("stack");
-const levelDisplay = document.getElementById("level-display");
-const cojoaceDisplay = document.getElementById("cojoace-display");
-const movesDisplay = document.getElementById("moves-display");
-const logEl = document.getElementById("log");
+function initMartisorGame() {
+  const container = document.getElementById("martisor-game");
 
-const btnMoveTop = document.getElementById("btn-move-top");
-const btnResetLevel = document.getElementById("btn-reset-level");
+  container.innerHTML = `
+    <h2>Joc Artistic – Martișor</h2>
 
-function log(message) {
-  const div = document.createElement("div");
-  div.className = "log-entry";
-  div.textContent = message;
-  logEl.prepend(div);
+    <div class="martisor-hud">
+      <span>Nivel: <span id="m-level"></span></span>
+      <span>Cojoace: <span id="m-cojoace"></span></span>
+      <span>Mutări: <span id="m-moves"></span></span>
+    </div>
+
+    <div class="martisor-stack" id="m-stack"></div>
+
+    <div class="martisor-controls">
+      <button id="m-move">Mută segmentul de sus</button>
+      <button id="m-reset">Resetează nivelul</button>
+    </div>
+
+    <div class="martisor-log" id="m-log"></div>
+  `;
+
+  document.getElementById("m-move").addEventListener("click", martisorMoveTop);
+  document.getElementById("m-reset").addEventListener("click", () => loadMartisorLevel(martisorLevel));
+
+  loadMartisorLevel(martisorLevel);
 }
 
-function renderStack() {
+function loadMartisorLevel(index) {
+  const level = MARTISOR_LEVELS[index];
+  martisorStack = [...level.initialStack];
+  martisorCojoace = 0;
+  martisorMoves = 0;
+
+  logMartisor(`--- Nivel ${level.id}: ${level.name} ---`);
+  renderMartisor();
+}
+
+function renderMartisor() {
+  const level = MARTISOR_LEVELS[martisorLevel];
+
+  document.getElementById("m-level").textContent = `${level.id} – ${level.name}`;
+  document.getElementById("m-cojoace").textContent = `${martisorCojoace}/${level.targetCojoace}`;
+  document.getElementById("m-moves").textContent = `${martisorMoves}/${level.maxMoves}`;
+
+  const stackEl = document.getElementById("m-stack");
   stackEl.innerHTML = "";
-  stack.forEach((type, index) => {
-    const li = document.createElement("li");
-    li.className = "stack-item";
-    li.dataset.type = type;
-    li.textContent = `Segment ${type}`;
-    // elementul de sus este ultimul din array (vârful stivei)
-    if (index === stack.length - 1) {
-      li.classList.add("top");
-      li.textContent += " (sus)";
-    }
-    stackEl.appendChild(li);
+
+  martisorStack.forEach((seg, i) => {
+    const div = document.createElement("div");
+    div.className = "martisor-item";
+    div.textContent = `Segment ${seg}`;
+
+    if (i === martisorStack.length - 1) div.classList.add("top");
+
+    div.style.background = {
+      A: "#e63946",
+      B: "#f4a261",
+      C: "#2a9d8f",
+      D: "#457b9d"
+    }[seg];
+
+    stackEl.appendChild(div);
   });
 }
 
-function updateHUD() {
-  const level = LEVELS[currentLevelIndex];
-  levelDisplay.textContent = `${level.id} – ${level.name}`;
-  cojoaceDisplay.textContent = `${cojoace}/${level.targetCojoace}`;
-  movesDisplay.textContent = `${moves}/${level.maxMoves}`;
+function martisorMoveTop() {
+  const level = MARTISOR_LEVELS[martisorLevel];
+
+  if (martisorMoves >= level.maxMoves) {
+    logMartisor("Nu mai ai mutări la acest nivel.");
+    return;
+  }
+
+  const top = martisorStack.pop();
+  martisorMoves++;
+
+  if (top === "A" || top === "B") {
+    martisorCojoace++;
+    logMartisor(`Ai colectat un cojoc cu segmentul ${top}!`);
+  } else {
+    martisorStack.unshift(top);
+    logMartisor(`Segmentul ${top} a fost pus la baza stivei.`);
+  }
+
+  renderMartisor();
+  checkMartisorLevel();
 }
 
-function loadLevel(index) {
-  const level = LEVELS[index];
-  stack = [...level.initialStack]; // copiem
-  cojoace = 0;
-  moves = 0;
-  log(`--- Nivel ${level.id}: ${level.name} ---`);
-  renderStack();
-  updateHUD();
-}
+function checkMartisorLevel() {
+  const level = MARTISOR_LEVELS[martisorLevel];
 
-function checkLevelComplete() {
-  const level = LEVELS[currentLevelIndex];
-  if (cojoace >= level.targetCojoace) {
-    log(`✔ Ai terminat nivelul ${level.id} cu succes!`);
-    currentLevelIndex++;
-    if (currentLevelIndex >= LEVELS.length) {
-      alert("🎉 Ai terminat toate nivelurile! 9 cojoace și mai multe!");
-      currentLevelIndex = LEVELS.length - 1;
+  if (martisorCojoace >= level.targetCojoace) {
+    logMartisor(`✔ Nivel ${level.id} complet!`);
+    martisorLevel++;
+
+    if (martisorLevel >= MARTISOR_LEVELS.length) {
+      logMartisor("🎉 Ai terminat toate nivelurile!");
       return;
     }
-    loadLevel(currentLevelIndex);
-  } else if (moves >= level.maxMoves) {
-    log(`✖ Ai epuizat mutările la nivelul ${level.id}. Încearcă din nou.`);
+
+    loadMartisorLevel(martisorLevel);
   }
 }
 
-function moveTopSegment() {
-  const level = LEVELS[currentLevelIndex];
-  if (moves >= level.maxMoves) {
-    log("Nu mai ai mutări la acest nivel. Resetează sau treci mai departe (dacă e complet).");
-    return;
-  }
-
-  if (stack.length === 0) {
-    log("Nu mai sunt segmente de mutat.");
-    return;
-  }
-
-  const top = stack.pop(); // vârful stivei
-  moves++;
-
-  // Regulă de joc:
-  // - Segmentele A și B dau cojoace.
-  // - C și D se întorc jos, dar pot schimba dinamica stivei.
-  if (top === "A" || top === "B") {
-    cojoace++;
-    log(`Ai mutat segmentul ${top} și ai colectat un cojoc! Total: ${cojoace}`);
-  } else {
-    // îl punem jos, dar putem adăuga o mică „penalizare” logică
-    stack.unshift(top);
-    log(`Segmentul ${top} nu a dat cojoc. A fost pus la baza stivei.`);
-  }
-
-  renderStack();
-  updateHUD();
-  checkLevelComplete();
+function logMartisor(msg) {
+  const log = document.getElementById("m-log");
+  const div = document.createElement("div");
+  div.textContent = msg;
+  log.prepend(div);
 }
 
-btnMoveTop.addEventListener("click", moveTopSegment);
-
-btnResetLevel.addEventListener("click", () => {
-  loadLevel(currentLevelIndex);
-  log("Nivel resetat.");
-});
-
-// Pornim jocul
-loadLevel(currentLevelIndex);
+document.addEventListener("DOMContentLoaded", initMartisorGame);
