@@ -1,40 +1,200 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <title>Martișor – Cojoace Puzzle</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Joc Artistic – Martișor</title>
+
+<style>
+/* ====== STILURI JOC MARTIȘOR ====== */
+
+#martisor-game {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffffcc;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.martisor-hud {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.martisor-stack {
+  border: 2px dashed #aaa;
+  padding: 15px;
+  border-radius: 10px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+}
+
+.martisor-item {
+  padding: 10px;
+  border-radius: 6px;
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+}
+
+.martisor-item.top {
+  outline: 3px solid #000;
+}
+
+.martisor-controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.martisor-log {
+  margin-top: 20px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+</style>
+
 </head>
 <body>
-  <div class="game-container">
-    <header>
-      <h1>Martișor – Cojoace Puzzle</h1>
-      <div class="hud">
-        <span>Nivel: <span id="level-display">1</span></span>
-        <span>Cojoace: <span id="cojoace-display">0</span></span>
-        <span>Mutări: <span id="moves-display">0</span></span>
-      </div>
-    </header>
 
-    <main>
-      <div class="stack-area">
-        <h2>Cojoc</h2>
-        <ul id="stack" class="stack"></ul>
-      </div>
+<h1 style="text-align:center;">Joc Artistic – Martișor</h1>
 
-      <div class="controls">
-        <button id="btn-move-top">Mută segmentul de sus</button>
-        <button id="btn-reset-level">Resetează nivelul</button>
-      </div>
+<div id="martisor-game"></div>
 
-      <div class="log" id="log"></div>
-    </main>
+<script>
+/* ====== LOGICA JOCULUI MARTIȘOR ====== */
 
-    <footer>
-      <small>Joc de mărțișor – logică cu cojoace și segmente.</small>
-    </footer>
-  </div>
+const MARTISOR_LEVELS = [
+  { id: 1, name: "Început de primăvară", initialStack: ["A","B","C"], targetCojoace: 2, maxMoves: 10 },
+  { id: 2, name: "Vânt de martie", initialStack: ["B","C","A","D"], targetCojoace: 3, maxMoves: 14 },
+  { id: 3, name: "Ninsoare târzie", initialStack: ["C","B","A","D","B"], targetCojoace: 4, maxMoves: 18 },
+  { id: 4, name: "Sărbătoare în sat", initialStack: ["D","C","B","A","B","A"], targetCojoace: 6, maxMoves: 24 }
+];
 
-  <script src="game.js"></script>
+let martisorLevel = 0;
+let martisorStack = [];
+let martisorCojoace = 0;
+let martisorMoves = 0;
+
+function initMartisorGame() {
+  const container = document.getElementById("martisor-game");
+
+  container.innerHTML = `
+    <div class="martisor-hud">
+      <span>Nivel: <span id="m-level"></span></span>
+      <span>Cojoace: <span id="m-cojoace"></span></span>
+      <span>Mutări: <span id="m-moves"></span></span>
+    </div>
+
+    <div class="martisor-stack" id="m-stack"></div>
+
+    <div class="martisor-controls">
+      <button id="m-move">Mută segmentul de sus</button>
+      <button id="m-reset">Resetează nivelul</button>
+    </div>
+
+    <div class="martisor-log" id="m-log"></div>
+  `;
+
+  document.getElementById("m-move").addEventListener("click", martisorMoveTop);
+  document.getElementById("m-reset").addEventListener("click", () => loadMartisorLevel(martisorLevel));
+
+  loadMartisorLevel(martisorLevel);
+}
+
+function loadMartisorLevel(index) {
+  const level = MARTISOR_LEVELS[index];
+  martisorStack = [...level.initialStack];
+  martisorCojoace = 0;
+  martisorMoves = 0;
+
+  logMartisor(`--- Nivel ${level.id}: ${level.name} ---`);
+  renderMartisor();
+}
+
+function renderMartisor() {
+  const level = MARTISOR_LEVELS[martisorLevel];
+
+  document.getElementById("m-level").textContent = `${level.id} – ${level.name}`;
+  document.getElementById("m-cojoace").textContent = `${martisorCojoace}/${level.targetCojoace}`;
+  document.getElementById("m-moves").textContent = `${martisorMoves}/${level.maxMoves}`;
+
+  const stackEl = document.getElementById("m-stack");
+  stackEl.innerHTML = "";
+
+  martisorStack.forEach((seg, i) => {
+    const div = document.createElement("div");
+    div.className = "martisor-item";
+    div.textContent = `Segment ${seg}`;
+
+    if (i === martisorStack.length - 1) div.classList.add("top");
+
+    div.style.background = {
+      A: "#e63946",
+      B: "#f4a261",
+      C: "#2a9d8f",
+      D: "#457b9d"
+    }[seg];
+
+    stackEl.appendChild(div);
+  });
+}
+
+function martisorMoveTop() {
+  const level = MARTISOR_LEVELS[martisorLevel];
+
+  if (martisorMoves >= level.maxMoves) {
+    logMartisor("Nu mai ai mutări la acest nivel.");
+    return;
+  }
+
+  const top = martisorStack.pop();
+  martisorMoves++;
+
+  if (top === "A" || top === "B") {
+    martisorCojoace++;
+    logMartisor(`Ai colectat un cojoc cu segmentul ${top}!`);
+  } else {
+    martisorStack.unshift(top);
+    logMartisor(`Segmentul ${top} a fost pus la baza stivei.`);
+  }
+
+  renderMartisor();
+  checkMartisorLevel();
+}
+
+function checkMartisorLevel() {
+  const level = MARTISOR_LEVELS[martisorLevel];
+
+  if (martisorCojoace >= level.targetCojoace) {
+    logMartisor(`✔ Nivel ${level.id} complet!`);
+    martisorLevel++;
+
+    if (martisorLevel >= MARTISOR_LEVELS.length) {
+      logMartisor("🎉 Ai terminat toate nivelurile!");
+      return;
+    }
+
+    loadMartisorLevel(martisorLevel);
+  }
+}
+
+function logMartisor(msg) {
+  const log = document.getElementById("m-log");
+  const div = document.createElement("div");
+  div.textContent = msg;
+  log.prepend(div);
+}
+
+document.addEventListener("DOMContentLoaded", initMartisorGame);
+</script>
+
 </body>
 </html>
