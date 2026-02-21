@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Martișor – Cojoace Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <header>
+      <h1>Martișor – Cojoace Puzzle</h1>
+      <div class="hud">
+        <span>Nivel: <span id="level-display">1</span></span>
+        <span>Cojoace: <span id="cojoace-display">0</span></span>
+        <span>Mutări: <span id="moves-display">0</span></span>
+      </div>
+    </header>
+
+    <main>
+      <div class="stack-area">
+        <h2>Cojoc</h2>
+        <ul id="stack" class="stack"></ul>
+      </div>
+
+      <div class="controls">
+        <button id="btn-move-top">Mută segmentul de sus</button>
+        <button id="btn-reset-level">Resetează nivelul</button>
+      </div>
+
+      <div class="log" id="log"></div>
+    </main>
+
+    <footer>
+      <small>Joc de mărțișor – logică cu cojoace și segmente.</small>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
